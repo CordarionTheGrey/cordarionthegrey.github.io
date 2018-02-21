@@ -1,1 +1,2 @@
 /waf linguist-vendored
+*.plim linguist-language=Slim
