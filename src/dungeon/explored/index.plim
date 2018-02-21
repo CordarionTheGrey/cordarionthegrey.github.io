@@ -16,8 +16,8 @@ html
       div Выделите карту похода как текст и скопируйте ее в поле выше.
       div: |
         `span.note Примечание:` Если у вас установлен
-        `a(href="https://godville.net/forums/show_topic/3432" target="_blank") Erinome Godville UI+`
-        `span.remark | (вообще не реклама, ага)`, вам понадобится зайти в его
+        `a(href="https://godville.net/forums/show_topic/3432" target="_blank" title="Вообще не реклама, ага.")
+          | Erinome Godville UI+`, вам понадобится зайти в его
         `a(href="https://godville.net/user/profile#ui_settings" target="_blank") настройки` и
         вставить в поле "Пользовательский CSS" в самом низу следующий код. Иначе выделить не
         получится.
