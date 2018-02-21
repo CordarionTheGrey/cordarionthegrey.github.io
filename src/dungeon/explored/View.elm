@@ -74,11 +74,6 @@ formatResult result =
     L.map (\f -> div [ ] (f result)) [formatSize, formatCells, formatBosses]
 
 
-sourceCode: List (Attribute msg) -> String -> Html msg
-sourceCode attrs source =
-    pre attrs [code [ ] [text source]]
-
-
 view: Model -> Html Msg
 view model =
     main_ [class "block"] [

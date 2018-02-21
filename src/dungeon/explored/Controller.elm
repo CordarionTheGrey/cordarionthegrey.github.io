@@ -1,5 +1,7 @@
 module Controller exposing (Msg(..), update)
 
+import Bitwise
+import Char
 import List as L
 import Regex as Rx exposing (Regex, HowMany(..), regex)
 import String as S
@@ -11,6 +13,22 @@ type Msg
     = Change String
 
 
+count: String -> String -> Int
+count needle =
+    L.length << S.indices needle
+
+
+countRx: Regex -> String -> Int
+countRx needle =
+    L.length << Rx.find All needle
+
+
+uniLength: String -> Int
+uniLength =
+    -- Discard one code unit of each surrogate pair.
+    S.foldl (\c n -> if Bitwise.and (Char.toCode c) 0xF800 /= 0xD800 then n + 1 else n) 0
+
+
 sanitize: String -> String
 sanitize =
     S.trim
@@ -18,35 +36,24 @@ sanitize =
     >> Rx.replace All (regex "[\r\n]+") (always "\n")
 
 
-headNonEmpty: List a -> a
-headNonEmpty ls =
-    case ls of
-        x :: _ -> x
-        _ -> Debug.crash "Calling head on an empty list"
-
-
-calculate: String -> MapResult
+calculate: String -> Maybe MapResult
 calculate s =
     let lines = S.lines s
         rows = L.length lines
-        -- Strings in JavaScript are in UCS-16 and not fully Unicode-aware.
-        -- There should be only plain ASCII characters in the first line though.
-        cols = S.length <| headNonEmpty lines -- It is guaranteed there is at least one line.
-    in {
-        height = rows,
-        width = cols,
-        explored = rows * cols - L.length (Rx.find All (regex "[#?!⚠]") s),
-        bosses = L.length (S.indices "💀" s),
-        secretChambers = L.length (S.indices "✖" s)
-    }
+        cols = L.foldl max 0 (L.map uniLength lines)
+    in if rows == 0 || cols == 0 then
+        Nothing
+    else
+        Just {
+            height = rows,
+            width = cols,
+            explored = rows * cols - countRx (regex "[#?!⚠]") s,
+            bosses = count "💀" s,
+            secretChambers = count "✖" s
+        }
 
 
 update: Msg -> Model -> Model
 update msg model =
     case msg of
-        Change s -> {
-            mapResult =
-                case sanitize s of
-                    "" -> Nothing
-                    newMap -> Just (calculate newMap)
-        }
+        Change newMap -> {mapResult = calculate (sanitize newMap)}
