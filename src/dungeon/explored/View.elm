@@ -28,7 +28,7 @@ numberSpan attrs n =
 formatSize: MapResult -> List (Html msg)
 formatSize {height, width} =
     [
-        text "Размеры карты: ",
+        text "Размер карты: ",
         span [class "size"] [text <| toString height ++ "x" ++ toString width],
         text "."
     ]
