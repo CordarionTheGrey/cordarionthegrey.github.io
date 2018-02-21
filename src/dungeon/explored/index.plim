@@ -1,9 +1,31 @@
 doctype html
+
 html
   head
     meta(charset="UTF-8")
     title Калькулятор подземелий
+    link(rel="shortcut icon" type="image/x-icon" href="/favicon.ico")
     link(rel="stylesheet" type="text/css" href="/dungeon/explored.min.css")
     script(type="text/javascript" src="/dungeon/explored.min.js")
+
   body
-    script(type="text/javascript") Elm.Main.fullscreen();
+    #main-wrapper
+    script(type="text/javascript") Elm.Main.embed(document.getElementById("main-wrapper"));
+
+    .block.description
+      div Выделите карту похода как текст и скопируйте ее в поле выше.
+      div: |
+        `span.note Примечание:` Если у вас установлен
+        `a(href="https://godville.net/forums/show_topic/3432" target="_blank") Erinome Godville UI+`
+        `span.remark | (вообще не реклама, ага)`, вам понадобится зайти в его
+        `a(href="https://godville.net/user/profile#ui_settings" target="_blank") настройки` и
+        вставить в поле "Пользовательский CSS" в самом низу следующий код. Иначе выделить не
+        получится.
+
+        `pre: code: |
+          #map, #dmap {
+              -webkit-user-select: auto;
+              -moz-user-select: auto;
+              user-select: auto;
+          }
+        `
