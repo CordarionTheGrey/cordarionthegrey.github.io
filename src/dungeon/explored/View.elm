@@ -63,9 +63,9 @@ formatBosses {bosses} =
             ("о", "боссов")
         ) bosses
     in [
-        text <| "Убит" ++ ending ++ " ",
+        text <| "Побежден" ++ ending ++ " ",
         numberSpan [class "bosses"] bosses,
-        text <| " " ++ word ++ (if bosses <= 8 then "." else " (серьезно?!).")
+        text <| " " ++ word ++ if bosses <= 8 then "." else " (серьезно?!)."
     ]
 
 
