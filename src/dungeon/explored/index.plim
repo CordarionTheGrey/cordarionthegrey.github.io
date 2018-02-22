@@ -15,6 +15,9 @@ html
     .block.description
       div Выделите карту похода как текст и скопируйте ее в поле выше.
       div: |
+        `span.note Работает только в Chrome и браузерах, основанных на Chromium.`
+        Кросс-браузерное решение в разработке.
+      div: |
         `span.note Примечание:` Если у вас установлен
         `a(href="https://godville.net/forums/show_topic/3432" target="_blank" title="Вообще не реклама, ага.")
           | Erinome Godville UI+`, вам понадобится зайти в его
