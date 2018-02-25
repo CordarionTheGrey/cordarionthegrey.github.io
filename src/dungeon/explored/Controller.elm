@@ -1,4 +1,4 @@
-module Controller exposing (Msg(..), update)
+port module Controller exposing (Msg(..), update)
 
 import Bitwise
 import Char
@@ -9,8 +9,12 @@ import String as S
 import Model exposing (Model, MapResult)
 
 
+port readFile: ({-inputSelector-} String, {-outputSelector-} String) -> Cmd msg
+
+
 type Msg
     = Change String
+    | LoadFile String String String
 
 
 count: String -> String -> Int
@@ -53,7 +57,10 @@ calculate s =
         }
 
 
-update: Msg -> Model -> Model
+update: Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
-        Change newMap -> {mapResult = calculate (sanitize newMap)}
+        Change newMap ->
+            ({mapResult = calculate (sanitize newMap)}, Cmd.none)
+        LoadFile inputSelector outputSelector _ ->
+            (model, readFile (inputSelector, outputSelector))

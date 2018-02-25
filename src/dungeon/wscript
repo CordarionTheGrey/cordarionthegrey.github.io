@@ -16,14 +16,19 @@ def build(bld):
     )
 
     bld(
-        features="elm",
-        source="explored/Main.elm",
+        features="live",
+        source="explored/main.ls",
         target="explored.js",
     )
     bld(
+        features="elm",
+        source="explored/Main.elm",
+        target="explored.elm.js",
+    )
+    bld(
         features="jsmin",
-        source="explored.js",
-        target=out_dir.make_node("explored.min.js"),
+        source="explored.js  explored.elm.js",
+        target=[out_dir.make_node("explored.min.js"), out_dir.make_node("explored.elm.min.js")],
     )
 
     bld(

@@ -1,4 +1,4 @@
-module Model exposing (MapResult, Model)
+module Model exposing (MapResult, Model, def)
 
 
 type alias MapResult = {
@@ -13,3 +13,7 @@ type alias MapResult = {
 type alias Model = {
     mapResult: Maybe MapResult
 }
+
+
+def: Model
+def = {mapResult = Nothing}

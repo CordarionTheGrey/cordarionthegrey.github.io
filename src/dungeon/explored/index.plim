@@ -6,11 +6,9 @@ html
     title Калькулятор подземелий
     link(rel="shortcut icon" type="image/x-icon" href="/favicon.ico")
     link(rel="stylesheet" type="text/css" href="/dungeon/explored.min.css")
-    script(type="text/javascript" src="/dungeon/explored.min.js")
 
   body
     #main-wrapper
-    script(type="text/javascript") Elm.Main.embed(document.getElementById("main-wrapper"));
 
     .block.description
       div Выделите карту похода как текст и скопируйте ее в поле выше.
@@ -32,3 +30,6 @@ html
               user-select: auto;
           }
         `
+
+    script(type="text/javascript" src="/dungeon/explored.elm.min.js")
+    script(type="text/javascript" src="/dungeon/explored.min.js")

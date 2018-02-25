@@ -3,7 +3,7 @@ def options(opt):
 
 
 def configure(cnf):
-    cnf.load("elm  jsminc  plimc  sassc", tooldir="waftools")
+    cnf.load("elm  jsminc  lsc  plimc  sassc", tooldir="waftools")
 
     cnf.env.append_value("ELM_FLAGS", ["--yes", "--warn"])
     cnf.env.SASS_OPTIONS = {"output_style": "compressed"}

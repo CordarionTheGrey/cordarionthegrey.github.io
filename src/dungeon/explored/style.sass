@@ -1,3 +1,7 @@
+=center-with-width($width)
+  width: $width
+  margin: auto
+
 a
   color: #0B7EB7
 
@@ -9,8 +13,7 @@ a
   margin: 1em 0 1.5em
 
 main
-  width: 11.25em
-  margin: auto
+  +center-with-width(15.9em)
 
 .block
   padding: 0.5em
@@ -20,10 +23,18 @@ main
   background-color: #F6F6F6
 
 .map
-  height: 19em
-  width: 13em
-  border-radius: 3px
-  resize: vertical
+  +center-with-width(15em)
+  padding-right: 5px
+
+  textarea
+    height: 19em
+    width: 100%
+    border-radius: 3px
+    resize: vertical
+    font-size: 1.15em
+
+.result
+  margin: 0.5em 0 0 5px
 
 .size,
 .cells,
@@ -32,9 +43,8 @@ main
   font-weight: bold
 
 .description
-  width: 60%
+  +center-with-width(60%)
   min-width: 300px
-  margin: auto
 
   div + div
     margin-top: 0.5em

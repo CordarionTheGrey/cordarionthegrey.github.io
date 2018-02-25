@@ -9,6 +9,9 @@ import taskgen_utils
 class jsminc(Task):
     color = "YELLOW"
 
+    def keyword(self):
+        return "Minifying"
+
     def run(self):
         result = jsmin.jsmin(self.inputs[0].read(encoding="utf-8-sig"))
         for node in self.outputs:

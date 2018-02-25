@@ -7,8 +7,9 @@ import View as V
 
 main: Program Never M.Model C.Msg
 main =
-    Html.beginnerProgram {
-        model = {mapResult = Nothing},
+    Html.program {
+        init = (M.def, Cmd.none),
         view = V.view,
-        update = C.update
+        update = C.update,
+        subscriptions = always Sub.none
     }

@@ -1,11 +1,12 @@
 module View exposing (view)
 
+import Json.Decode
 import List as L
 import Maybe as M exposing (Maybe)
 
 import Html exposing (..)
-import Html.Attributes exposing (class, href, target)
-import Html.Events exposing (onInput)
+import Html.Attributes exposing (accept, class, href, id, target, type_)
+import Html.Events exposing (on, onInput, targetValue)
 
 import Controller exposing (Msg(..))
 import Model exposing (Model, MapResult)
@@ -74,9 +75,22 @@ formatResult result =
     L.map (\f -> div [ ] (f result)) [formatSize, formatCells, formatBosses]
 
 
+onChange: (String -> msg) -> Attribute msg
+onChange tagger =
+    on "change" (Json.Decode.map tagger targetValue)
+
+
 view: Model -> Html Msg
 view model =
     main_ [class "block"] [
-        textarea [class "map", onInput Change] [ ],
+        div [class "map"] [
+            textarea [id "map", onInput Change] [ ]
+        ],
+        input [
+            type_ "file",
+            id "map-picker",
+            accept "text/html",
+            onChange (LoadFile "#map-picker" "#map")
+        ] [ ],
         div [class "result"] (M.map formatResult model.mapResult |> M.withDefault [ ])
     ]
