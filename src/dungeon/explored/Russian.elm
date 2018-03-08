@@ -8,7 +8,7 @@ numberOf: Int -> Number
 numberOf n =
     let x = abs (rem n 100)
     in if x <= 4 || x >= 21 then
-        case x % 10 of
+        case rem x 10 of
             1 -> Singular
             2 -> Paucal
             3 -> Paucal

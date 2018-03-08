@@ -7,10 +7,10 @@ readFile = (file, callback) !->
 extractMap = (html, callback) !->
   # Extract the map to avoid building a DOM for the whole page.
   callback that.0 if //
-    <div \s [^<>]*? \bid \s* = \s* .? \bd?map\b
+    <div \s [^<>]*? \bid \s* = \s* .? \s* \bd?map\b
     [\s\S]*?
     </div> \s* </div> \s* </div>
-  //.exec html
+  //i.exec html
 
 
 parseMap = (html) ->
