@@ -3,7 +3,7 @@ doctype html
 html
   head
     meta(charset="UTF-8")
-    title Калькулятор подземелий
+    title Клеткосчиталка
     link(rel="shortcut icon" type="image/x-icon" href="/favicon.ico")
     link(rel="stylesheet" type="text/css" href="/dungeon/explored.min.css")
 
