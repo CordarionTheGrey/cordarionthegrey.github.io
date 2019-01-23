@@ -20,7 +20,7 @@ html
             `a(href="https://godville.net/forums/show_topic/3432" target="_blank" title="Вообще не реклама, ага.")
               | Erinome Godville UI+`, вам понадобится зайти в его
             `a(href="https://godville.net/user/profile#ui_settings" target="_blank") настройки` и
-            вставить в поле "Пользовательский CSS" в самом низу следующий код. Иначе выделить не
+            вставить в поле “Пользовательский CSS” в самом низу следующий код. Иначе выделить не
             получится.
 
             `pre: code: |
@@ -33,7 +33,7 @@ html
         | `span.note Способ 2`, а-ля ЛЕМ (работает везде):
         .method: |
           Сохраните страницу с хроникой похода на компьютер. При сохранении выберите пункт
-          "Веб-страница (только HTML-код)". Полученный .html-файл загрузите сюда.
+          “Веб-страница (только HTML-код)”. Полученный .html-файл загрузите сюда.
 
     script(type="text/javascript" src="/dungeon/explored.elm.min.js")
     script(type="text/javascript" src="/dungeon/explored.min.js")

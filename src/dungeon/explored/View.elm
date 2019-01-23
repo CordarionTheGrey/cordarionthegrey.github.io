@@ -48,7 +48,7 @@ formatCells {explored, secretChambers} =
             text <| " " ++ word
         ]
     in  L.append prefix <| if secretChambers > 0 then [
-        text ", если была посещена Тайная Комната, или ",
+        text ", если была посещена Тайная комната, или ",
         numberSpan [class "cells"] (explored - secretChambers),
         text ", если нет."
     ] else [
