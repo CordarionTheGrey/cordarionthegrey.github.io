@@ -8,6 +8,44 @@ html
     link(rel="stylesheet" type="text/css" href="/hexeditor/style.min.css")
 
   body
-    / TODO.
+    .hex-editor
+      .horiz-tile.visualization
+        .block
+          svg.vis-svg(width="100%" height="600px" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink")
+            g#svg-root(transform="translate(0,0)")
+
+      .horiz-tile.control-panel
+        #palette-tile-placer.block
+          .header: Ландшафтный дизайнер
+          .contents:
+            button#place-tile(title="Добавить гекс"): | +
+            button#unplace-tile(title="Удалить гекс"): | −
+
+        #palette-object-registry.block.hidden
+          .header: Реестр объектов
+          .contents: | Not implemented.
+
+        #palette-tile-inspector.block
+          .header: Инспектор гексов
+          .contents:
+            div#inspected-id: | <Не выбрано>
+            div
+              label(for="inspected-color"): Цвет
+              input#inspected-color
+            div
+              label(for="inspected-label"): Надпись
+              input#inspected-label
+            / div
+              label(for="inspected-pic"): Картинка (URL)
+              input#inspected-pic
+
+        #palette-edge-inspector.block
+          .header: Таможенный инспектор
+          .contents:
+            div: Щёлкните по двум соседним гексам, чтобы изменить параметры границы между ними.
+            div#inspected-edge: | ? — ?
+            div
+              label(for="inspected-edge-thickness"): Толщина
+              input#inspected-edge-thickness(disabled)
 
     script(type="text/javascript" src="/hexeditor/main.min.js")
