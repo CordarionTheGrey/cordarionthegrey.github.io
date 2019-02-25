@@ -2,7 +2,7 @@
 "use strict"
 
 
-const DEFAULT_SCALE = 3.5 # Must be synced with the corresponding variable in CSS.
+const DEFAULT_SCALE = 3 # Must be synced with the corresponding variable in CSS.
 const DEFAULT_EDGE_THICKNESS = 0.25
 const PALETTES =
   \palette-tile-placer
@@ -14,10 +14,12 @@ const PALETTES =
 /**
  * @typedef {Object} Tile
  * @property {Vec} pos
+ * @property {string} color
  * @property {?number} id
  * @property {!SVGElement} node
  * @property {!SVGElement} polygon
  * @property {!SVGElement} label
+ * @property {!SVGElement} sublabel
  * @property {!SVGElement} pic
  */
 
@@ -36,7 +38,7 @@ model =
   svgRoot: null
   tiles: { }
   edges: { }
-  idCounter: 0
+  idCounter: -1
   auxTile: null
   activePal: ""
   placerAction: ""
@@ -272,13 +274,14 @@ newTileNode = (pos, id, color) ->
       points: "9.5,-5.5 9.5,5.5 0,11 -9.5,5.5 -9.5,-5.5 0,-11"
       fill: color
     newSVG \text, {class: \tile-label}
+    newSVG \text, {class: \tile-sublabel, y: 6}
     # newSVG \image, { }
   if id?
     children.push newSVG \text, {class: \tile-id, y: -6}
   newSVG \g, {class: \hex-tile, transform: "translate(0,0)"}, children
     xy = Vec.toCartesian pos, 11 # A magic number, yeah.
     moveTileRaw .., xy.0, xy.1
-    ..lastChild.textContent = "\##{id}" if id?
+    ..lastChild.textContent = \# + id if id?
 
 
 placeTile = (pos, id, color) ->
@@ -287,7 +290,7 @@ placeTile = (pos, id, color) ->
   model.svgRoot.appendChild node
   polygon = node.firstChild
   label = polygon.nextSibling
-  model.tiles[pos] = {pos, id, node, polygon, label, pic: label.nextSibling}
+  model.tiles[pos] = {pos, color, id, node, polygon, label, sublabel: label.nextSibling, pic: null}
 
 
 unplaceTile = (pos) !->
@@ -315,14 +318,16 @@ getEdge = (pos0, pos1) ->
 
 placeEdge = (pos0, pos1, thickness) ->
   if pos0 > pos1
-    t = pos0
-    pos0 = pos1
-    pos1 = t
+    t = pos0; pos0 = pos1; pos1 = t
 
   key = getEdgeKey pos0, pos1
   console.assert key !of model.edges, "An edge is placed above another one"
 
-  switch Vec.sub pos1, pos0
+  a = model.tiles[pos0]
+  b = model.tiles[pos1]
+  if a.id < b.id
+    o = a; a = b; b = o
+  switch Vec.sub b.pos, a.pos
     case 0x0001 /*E*/   => x1 =  9.5; y1 = -5.5; x2 =  9.5; y2 = 5.5
     case 0x00FF /*W*/   => x1 = -9.5; y1 = -5.5; x2 = -9.5; y2 = 5.5
     case 0x0100 /*SSE*/ => x1 =  9.5; y1 =  5.5; x2 = 0;    y2 =  11
@@ -331,7 +336,7 @@ placeEdge = (pos0, pos1, thickness) ->
     case 0x01FF /*SSW*/ => x1 = -9.5; y1 =  5.5; x2 = 0;    y2 =  11
 
   line = newSVG \line, {x1, y1, x2, y2, style: "stroke-width:#{thickness}"}
-  model.tiles[pos0].node.appendChild line
+  a.node.appendChild line
   model.edges[key] = {pos0, pos1, thickness, line}
 
 
@@ -389,15 +394,16 @@ main = !->
     unless pos of model.tiles
       if model.auxTile
         unplaceTile that.pos
-      model.auxTile = placeTile pos, null, '#F2F2F2'
+      model.auxTile = placeTile pos, null, \#F2F2F2
         ..node.classList.add \ghost
 
   # Click on the SVG.
-  svg.addEventListener \click, (ev) !->
+  svg.addEventListener \mousedown, (ev) !->
+    return if ev.button
     if model.placerAction == \place
       if model.auxTile
         unplaceTile model.auxTile.pos
-        placeTile model.auxTile.pos, ++model.idCounter, '#EEEEEE'
+        placeTile model.auxTile.pos, ++model.idCounter, \#EEEEEE
         model.auxTile = null
     else if model.placerAction == \unplace
       pos = Vec.fromCartesian ev.offsetX - rootX, ev.offsetY - rootY, 11 # A magic number.
@@ -410,9 +416,10 @@ main = !->
           model.curInspected.node.classList.remove \inspected
         model.curInspected = tile
         tile.node.classList.add \inspected
-        $id \inspected-id .textContent = "\##{tile.id}"
-        $id \inspected-color .value = tile.polygon.style.fill || '#EEEEEE'
+        $id \inspected-id .textContent = \# + tile.id
+        $id \inspected-color .value = tile.color
         $id \inspected-label .value = tile.label.textContent
+        $id \inspected-sublabel .value = tile.sublabel.textContent
         # $id \inspected-pic .value = tile.pic.getAttributeNS \xlink, \href
     else if model.activePal == \palette-edge-inspector
       pos = Vec.fromCartesian ev.offsetX - rootX, ev.offsetY - rootY, 11 # A magic number.
@@ -423,7 +430,7 @@ main = !->
           model.curInspected1 = tile
           model.curInspected2 = null
         $id \inspected-edge .textContent =
-          "#{if model.curInspected1?id then '#' + that else '?'} — #{if model.curInspected2?id then '#' + that else '?'}"
+          "#{if model.curInspected1?id? then \# + that else '?'} — #{if model.curInspected2?id? then \# + that else '?'}"
         input = $id \inspected-edge-thickness
         unless (input.disabled = !model.curInspected2)
           edge = getEdge model.curInspected1.pos, model.curInspected2.pos
@@ -444,10 +451,13 @@ main = !->
       model.auxTile = null
 
   $id \inspected-color .addEventListener \input, !->
-    that.polygon.style.fill = @value if model.curInspected
+    that.color = that.polygon.style.fill = @value if model.curInspected
 
   $id \inspected-label .addEventListener \input, !->
     that.label.textContent = @value if model.curInspected
+
+  $id \inspected-sublabel .addEventListener \input, !->
+    that.sublabel.textContent = @value if model.curInspected
 
   # $id \inspected-pic .addEventListener \input, !->
   #   model.curInspected.pic.setAttributeNS \xlink, \href, @value
@@ -455,10 +465,12 @@ main = !->
   addCustomListener \palette-tile-inspector, \close, !->
     if model.curInspected
       model.curInspected.node.classList.remove \inspected
-      $id \inspected-id .textContent = "<Не выбрано>"
-      $id \inspected-color .textContent = $id \inspected-label .textContent = ""
-      # $id \inspected-pic .textContent = ""
       model.curInspected = null
+    $id \inspected-id .textContent = "<Не выбрано>"
+    $id \inspected-color .textContent =
+      $id \inspected-label .textContent =
+        $id \inspected-sublabel .textContent = ""
+    # $id \inspected-pic .textContent = ""
 
   $id \inspected-edge-thickness .addEventListener \input, !->
     model.curInspectedEdge.thickness = model.curInspectedEdge.line.style.strokeWidth = @value

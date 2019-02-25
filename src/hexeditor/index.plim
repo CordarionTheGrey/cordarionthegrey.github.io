@@ -11,7 +11,7 @@ html
     .hex-editor
       .horiz-tile.visualization
         .block
-          svg.vis-svg(width="100%" height="600px" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink")
+          svg.vis-svg(width="100%" height="680px" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink")
             g#svg-root(transform="translate(0,0)")
 
       .horiz-tile.control-panel
@@ -35,6 +35,9 @@ html
             div
               label(for="inspected-label"): Надпись
               input#inspected-label
+            div
+              label(for="inspected-sublabel"): Подпись
+              input#inspected-sublabel
             / div
               label(for="inspected-pic"): Картинка (URL)
               input#inspected-pic

@@ -1,12 +1,8 @@
-// =center-with-width($width)
-//   width: $width
-//   margin: auto
-
 body
   width: 95%
   margin: 3px auto
 
-$svg-scale: 3.5
+$svg-scale: 3
 
 .hidden
   display: none
@@ -39,7 +35,6 @@ $visualization-width: 70%
 
 .contents
   margin: 2px
-  // display: none
 
 .pressed-button
   border-style: inset
@@ -54,24 +49,33 @@ input:not([type])
 .vis-svg
   transform: scale($svg-scale)
   transform-origin: left top 0
+  -webkit-user-select: none
+  -moz-user-select: none
+  user-select: none
 
 .hex-tile
   stroke-width: 0.25
   stroke: #444
 
+  .tile-id,
+  .tile-label,
+  .tile-sublabel,
+    text-anchor: middle
+
   .tile-id
     stroke-width: 0.1
     font-size: 4px
-    text-anchor: middle
 
   .tile-label
     stroke-width: 0.15
     font-size: 5px
-    text-anchor: middle
+
+  .tile-sublabel
+    stroke-width: 0.13
+    font-size: 4px
 
   &.ghost
-    // stroke-width: 0.25
-    stroke: #888
+    stroke: #999
 
   &.inspected polygon
     stroke-width: 0.8
