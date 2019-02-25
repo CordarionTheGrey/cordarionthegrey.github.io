@@ -449,7 +449,8 @@ main = !->
     placeButton.classList.remove \pressed-button
     unplaceButton.classList.toggle \pressed-button
     uiModel.placerAction = if uiModel.placerAction != \unplace then \unplace else ""
-  $id \reset-map .addEventListener \click, !->
+
+  resetMap = !->
     return unless confirm "Вы действительно хотите полностью очистить карту?"
     model := createModel!
     saveModel model
@@ -458,6 +459,7 @@ main = !->
         ..removeChild that
     view := createView!
 
+  $id \reset-map .addEventListener \click, !-> setTimeout resetMap, 0
   addCustomListener \palette-tile-placer, \close, !->
     placeButton.classList.remove \pressed-button
     unplaceButton.classList.remove \pressed-button
