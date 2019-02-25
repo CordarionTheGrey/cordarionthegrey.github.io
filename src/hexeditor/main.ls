@@ -338,16 +338,14 @@ getEdge = (model, pos0, pos1) ->
   model.edges[getEdgeKey pos0, pos1] || model.edges[getEdgeKey pos1, pos0]
 
 
-createEdgeWithMaster = (model, pos0, pos1, thickness) ->
-  a = model.tiles[pos0]
-  b = model.tiles[pos1]
-  if a.id >= b.id
-    [{pos0, pos1, thickness}, a]
+createEdge = (model, pos0, pos1, thickness) ->
+  if model.tiles[pos0].id >= model.tiles[pos1].id
+    {pos0, pos1, thickness}
   else
-    [{pos0: pos1, pos1: pos0, thickness}, b]
+    {pos0: pos1, pos1: pos0, thickness}
 
 
-addEdgeToView = (view, {pos0, pos1, thickness}, masterTile) !->
+addEdgeToView = (view, {pos0, pos1, thickness}) !->
   # console.assert id0 >= id1, "Invalid edge direction"
   switch Vec.sub pos1, pos0 # There must be a place for magic in our world, so here it is.
     case 0x0001 /*E*/   => x1 =  9.5; y1 = -5.5; x2 =  9.5; y2 = 5.5
@@ -359,7 +357,7 @@ addEdgeToView = (view, {pos0, pos1, thickness}, masterTile) !->
 
   line = createNode \line, {x1, y1, x2, y2, style: "stroke-width:#{thickness}"}
   view.edges[getEdgeKey pos0, pos1] = line
-  view.tiles[masterTile.pos].appendChild line
+  view.tiles[pos0].appendChild line
 
 
 updateEdgeInView = (view, edge) !->
@@ -378,11 +376,33 @@ formatTileId = (model, pos) ->
     \?
 
 
+loadModel = ->
+  m = m0 = localStorage.currentMigration || ""
+
+  if m < \2019-02-26
+    m  = \2019-02-26
+    delete localStorage.map
+
+  localStorage.currentMigration = m if m != m0
+  try
+    deserializeModel localStorage.map
+  catch
+    console.error e
+    createModel!
+
+
+saveModel = (model) !->
+  localStorage.map = serializeModel model
+
+
 main = !->
   removeEventListener \DOMContentLoaded, main
 
-  model = createModel!
+  model = loadModel!
   view = createView!
+  [addTileToView view, .. for Object.values model.tiles]
+  [addEdgeToView view, .. for Object.values model.edges]
+
   uiModel =
     auxTile: null
     activePal: ""
@@ -429,6 +449,14 @@ main = !->
     placeButton.classList.remove \pressed-button
     unplaceButton.classList.toggle \pressed-button
     uiModel.placerAction = if uiModel.placerAction != \unplace then \unplace else ""
+  $id \reset-map .addEventListener \click, !->
+    return unless confirm "Вы действительно хотите полностью очистить карту?"
+    model := createModel!
+    saveModel model
+    view.svgRoot
+      while ..firstChild
+        ..removeChild that
+    view := createView!
 
   addCustomListener \palette-tile-placer, \close, !->
     placeButton.classList.remove \pressed-button
@@ -492,15 +520,17 @@ main = !->
           input.value = ""
         else
           unless (edge = getEdge model, uiModel.curInspected1, uiModel.curInspected2)
-            [edge, masterTile] = createEdgeWithMaster do
+            edge = createEdge do
               model
               uiModel.curInspected1
               uiModel.curInspected2
               DEFAULT_EDGE_THICKNESS
             model.edges[getEdgeKey edge.pos0, edge.pos1] = edge
-            addEdgeToView view, edge, masterTile
+            addEdgeToView view, edge
           uiModel.curInspectedEdge = edge
           input.value = edge.thickness
+
+    saveModel model
 
   # Mouse leave from the SVG.
   svg.addEventListener \mouseleave, !->
@@ -514,18 +544,21 @@ main = !->
       model.tiles[that]
         ..color = @value
         updateTileInView view, ..
+      saveModel model
 
   $id \inspected-label .addEventListener \input, !->
     if uiModel.curInspected?
       model.tiles[that]
         ..label = @value
         updateTileInView view, ..
+      saveModel model
 
   $id \inspected-sublabel .addEventListener \input, !->
     if uiModel.curInspected?
       model.tiles[that]
         ..sublabel = @value
         updateTileInView view, ..
+      saveModel model
 
   addCustomListener \palette-tile-inspector, \close, !->
     if uiModel.curInspected?
@@ -540,6 +573,7 @@ main = !->
     if uiModel.curInspectedEdge
       that.thickness = @value
       updateEdgeInView view, that
+      saveModel model
 
   addCustomListener \palette-edge-inspector, \close, !->
     uiModel.curInspected1 = uiModel.curInspected2 = null

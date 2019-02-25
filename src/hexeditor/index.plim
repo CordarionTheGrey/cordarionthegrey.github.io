@@ -20,6 +20,7 @@ html
           .contents:
             button#place-tile(title="Добавить гекс"): | +
             button#unplace-tile(title="Удалить гекс"): | −
+            button#reset-map(title="Сбросить всё"): | !!!
 
         #palette-object-registry.block.hidden
           .header: Реестр объектов
@@ -28,7 +29,7 @@ html
         #palette-tile-inspector.block
           .header: Инспектор гексов
           .contents:
-            div#inspected-id: | <Не выбрано>
+            #inspected-id: | <Не выбрано>
             div
               label(for="inspected-color"): Цвет
               input#inspected-color
@@ -46,7 +47,7 @@ html
           .header: Таможенный инспектор
           .contents:
             div: Щёлкните по двум соседним гексам, чтобы изменить параметры границы между ними.
-            div#inspected-edge: | ? — ?
+            #inspected-edge: | ? — ?
             div
               label(for="inspected-edge-thickness"): Толщина
               input#inspected-edge-thickness(disabled)
