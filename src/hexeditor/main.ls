@@ -1,4 +1,3 @@
-# Не кидайтесь помидорами, пожалуйста, у меня было 6 часов на написание прототипа.
 "use strict"
 
 
@@ -11,16 +10,18 @@ const PALETTES =
   \palette-edge-inspector
 
 
+unless Object.values
+  Object.values = (o) ->
+    [o[..] for Object.keys o]
+
+
 /**
  * @typedef {Object} Tile
  * @property {Vec} pos
- * @property {string} color
  * @property {?number} id
- * @property {!SVGElement} node
- * @property {!SVGElement} polygon
- * @property {!SVGElement} label
- * @property {!SVGElement} sublabel
- * @property {!SVGElement} pic
+ * @property {string} color
+ * @property {string} label
+ * @property {string} sublabel
  */
 
 
@@ -29,27 +30,50 @@ const PALETTES =
  * @property {Vec} pos0
  * @property {Vec} pos1
  * @property {number} thickness
- * @property {!SVGElement} line
  */
 
 
-# Globals.
-model =
-  svgRoot: null
+$id = -> document.getElementById it
+
+
+getEdgeKey = (pos0, pos1) ->
+  pos0 .<<. 16 .|. pos1
+
+
+createModel = ->
   tiles: { }
   edges: { }
   idCounter: -1
-  auxTile: null
-  activePal: ""
-  placerAction: ""
-  curInspected: null
-  # For edge inspecting.
-  curInspected1: null
-  curInspected2: null
-  curInspectedEdge: null
 
 
-customEventListeners = { }
+serializeModel = (model) ->
+  JSON.stringify {
+    tiles: Object.values model.tiles
+    edges: Object.values model.edges
+    model.idCounter
+  }
+
+
+deserializeModel = (s) ->
+  o = JSON.parse s
+  tiles = {[..pos, ..] for o.tiles}
+  edges = {[getEdgeKey(..pos0, ..pos1), ..] for o.edges}
+  {tiles, edges, o.idCounter}
+
+
+createView = ->
+  svgRoot: $id \svg-root # <g>
+
+  tiles:     { } # <g>
+  polygons:  { } # <polygon>
+  labels:    { } # <text>
+  sublabels: { } # <text>
+
+  edges: { } # <line>
+
+
+# Globals.
+const customEventListeners = { }
 
 
 addCustomListener = (target, type, action) !->
@@ -191,8 +215,8 @@ var Vec = {
   },
 
   /**
-   * @param {GUIp.common.islandsMap.Vec} arrow
-   * @param {GUIp.common.islandsMap.Vec} pos
+   * @param {Vec} arrow
+   * @param {Vec} pos
    * @returns {boolean}
    */
   inArrowSector: function(arrow, pos) {
@@ -249,9 +273,6 @@ var Vec = {
 ``
 
 
-$id = -> document.getElementById it
-
-
 moveTileRaw = (tile, x, y) !->
   tile.transform.baseVal.0.matrix
     ..e = x
@@ -259,75 +280,76 @@ moveTileRaw = (tile, x, y) !->
 
 
 # SVG creation function.
-newSVG = (tagName, attrs, children) ->
+createNode = (tagName, attrs, children) ->
   node = document.createElementNS \http://www.w3.org/2000/svg, tagName
-  for key in Object.keys attrs
-    node.setAttribute key, attrs[key]
+  [node.setAttribute .., attrs[..] for Object.keys attrs]
   if children
     [node.appendChild .. for children]
   node
 
 
-newTileNode = (pos, id, color) ->
-  children =
-    newSVG \polygon, do
-      points: "9.5,-5.5 9.5,5.5 0,11 -9.5,5.5 -9.5,-5.5 0,-11"
-      fill: color
-    newSVG \text, {class: \tile-label}
-    newSVG \text, {class: \tile-sublabel, y: 6}
-    # newSVG \image, { }
+createTile = (pos, id, color) ->
+  {pos, id, color, label: "", sublabel: ""}
+
+
+addTileToView = (view, {pos, id, color, label, sublabel}) ->
+  console.assert pos !of view.tiles, "A tile is placed above another one"
+
+  vPoly = createNode \polygon, do
+    points: "9.5,-5.5 9.5,5.5 0,11 -9.5,5.5 -9.5,-5.5 0,-11"
+    style:  "fill:#{color}"
+  vLabel    = createNode \text, {class: \tile-label}
+  vSublabel = createNode \text, {class: \tile-sublabel, y: 6}
+
+  vLabel.textContent = label
+  vSublabel.textContent = sublabel
+
+  children = [vPoly, vLabel, vSublabel]
   if id?
-    children.push newSVG \text, {class: \tile-id, y: -6}
-  newSVG \g, {class: \hex-tile, transform: "translate(0,0)"}, children
+    (children.3 = createNode \text, {class: \tile-id, y: -6})
+    .textContent = \# + id
+
+  view.polygons[pos] = vPoly
+  view.labels[pos] = vLabel
+  view.sublabels[pos] = vSublabel
+  view.tiles[pos] = createNode \g, {class: \hex-tile, transform: "translate(0,0)"}, children
     xy = Vec.toCartesian pos, 11 # A magic number, yeah.
     moveTileRaw .., xy.0, xy.1
-    ..lastChild.textContent = \# + id if id?
+    view.svgRoot.appendChild ..
 
 
-placeTile = (pos, id, color) ->
-  console.assert pos !of model.tiles, "A tile is placed above another one"
-  node = newTileNode pos, id, color
-  model.svgRoot.appendChild node
-  polygon = node.firstChild
-  label = polygon.nextSibling
-  model.tiles[pos] = {pos, color, id, node, polygon, label, sublabel: label.nextSibling, pic: null}
+updateTileInView = (view, {
+  pos,
+  # Assuming `id` is immutable.
+  color:    view.polygons[pos].style.fill,
+  label:    view.labels[pos].textContent,
+  sublabel: view.sublabels[pos].textContent,
+}) !->
 
 
-unplaceTile = (pos) !->
-  tile = model.tiles[pos]
-  unless tile
-    console.assert false, "Cannot unplace non-existent tile"
-    return
-  model.svgRoot.removeChild tile.node
-  delete model.tiles[pos]
+removeTileFromView = (view, {pos}) !->
+  view.svgRoot.removeChild delete view.tiles[pos]
+  delete view.polygons[pos]
+  delete view.labels[pos]
+  delete view.sublabels[pos]
 
 
-getEdgeKey = (pos0, pos1) ->
-  console.assert pos0 <= pos1, "Invalid parameter order in getEdgeKey"
-  pos0 .<<. 16 .|. pos1
+getEdge = (model, pos0, pos1) ->
+  model.edges[getEdgeKey pos0, pos1] || model.edges[getEdgeKey pos1, pos0]
 
 
-getEdge = (pos0, pos1) ->
-  if pos0 > pos1
-    t = pos0
-    pos0 = pos1
-    pos1 = t
-
-  model.edges[getEdgeKey pos0, pos1]
-
-
-placeEdge = (pos0, pos1, thickness) ->
-  if pos0 > pos1
-    t = pos0; pos0 = pos1; pos1 = t
-
-  key = getEdgeKey pos0, pos1
-  console.assert key !of model.edges, "An edge is placed above another one"
-
+createEdgeWithMaster = (model, pos0, pos1, thickness) ->
   a = model.tiles[pos0]
   b = model.tiles[pos1]
-  if a.id < b.id
-    o = a; a = b; b = o
-  switch Vec.sub b.pos, a.pos
+  if a.id >= b.id
+    [{pos0, pos1, thickness}, a]
+  else
+    [{pos0: pos1, pos1: pos0, thickness}, b]
+
+
+addEdgeToView = (view, {pos0, pos1, thickness}, masterTile) !->
+  # console.assert id0 >= id1, "Invalid edge direction"
+  switch Vec.sub pos1, pos0 # There must be a place for magic in our world, so here it is.
     case 0x0001 /*E*/   => x1 =  9.5; y1 = -5.5; x2 =  9.5; y2 = 5.5
     case 0x00FF /*W*/   => x1 = -9.5; y1 = -5.5; x2 = -9.5; y2 = 5.5
     case 0x0100 /*SSE*/ => x1 =  9.5; y1 =  5.5; x2 = 0;    y2 =  11
@@ -335,21 +357,48 @@ placeEdge = (pos0, pos1, thickness) ->
     case 0xFF01 /*NNE*/ => x1 =  9.5; y1 = -5.5; x2 = 0;    y2 = -11
     case 0x01FF /*SSW*/ => x1 = -9.5; y1 =  5.5; x2 = 0;    y2 =  11
 
-  line = newSVG \line, {x1, y1, x2, y2, style: "stroke-width:#{thickness}"}
-  a.node.appendChild line
-  model.edges[key] = {pos0, pos1, thickness, line}
+  line = createNode \line, {x1, y1, x2, y2, style: "stroke-width:#{thickness}"}
+  view.edges[getEdgeKey pos0, pos1] = line
+  view.tiles[masterTile.pos].appendChild line
+
+
+updateEdgeInView = (view, edge) !->
+  view.edges[getEdgeKey edge.pos0, edge.pos1].style.strokeWidth = edge.thickness
+
+
+removeEdgeFromView = (view, edge) !->
+  delete view.edges[getEdgeKey edge.pos0, edge.pos1]
+    ..parentNode.removeChild ..
+
+
+formatTileId = (model, pos) ->
+  if pos?
+    \# + model.tiles[pos].id
+  else
+    \?
 
 
 main = !->
   removeEventListener \DOMContentLoaded, main
 
+  model = createModel!
+  view = createView!
+  uiModel =
+    auxTile: null
+    activePal: ""
+    placerAction: ""
+    curInspected: null
+    # For edge inspecting.
+    curInspected1: null
+    curInspected2: null
+    curInspectedEdge: null
+
   # Move #svg-root to the center of its <svg>.
-  model.svgRoot = $id \svg-root
-  svg = model.svgRoot.parentNode
+  svg = view.svgRoot.parentNode
   coeff = 0.5 / DEFAULT_SCALE
   rootX = svg.clientWidth * coeff
   rootY = svg.clientHeight * coeff
-  moveTileRaw model.svgRoot, rootX, rootY
+  moveTileRaw view.svgRoot, rootX, rootY
 
   # Palette initialization.
   for palId in PALETTES
@@ -357,16 +406,16 @@ main = !->
     let palId, contents = pal.getElementsByClassName(\contents).0
       contents.classList.add \hidden
       pal.getElementsByClassName \header .0.addEventListener \click, !->
-        if model.activePal
+        if uiModel.activePal
           $id that .getElementsByClassName \contents .0.classList.add \hidden
           fireCustomListener that, \close
           if palId == that
-            model.activePal = ""
+            uiModel.activePal = ""
             return
 
         fireCustomListener palId, \open
         contents.classList.toggle \hidden
-        model.activePal = palId
+        uiModel.activePal = palId
 
   # Placer palette initialization.
   placeButton = $id \place-tile
@@ -375,108 +424,125 @@ main = !->
   placeButton.addEventListener \click, !->
     unplaceButton.classList.remove \pressed-button
     placeButton.classList.toggle \pressed-button
-    model.placerAction = if model.placerAction != \place then \place else ""
+    uiModel.placerAction = if uiModel.placerAction != \place then \place else ""
   unplaceButton.addEventListener \click, !->
     placeButton.classList.remove \pressed-button
     unplaceButton.classList.toggle \pressed-button
-    model.placerAction = if model.placerAction != \unplace then \unplace else ""
+    uiModel.placerAction = if uiModel.placerAction != \unplace then \unplace else ""
 
   addCustomListener \palette-tile-placer, \close, !->
     placeButton.classList.remove \pressed-button
     unplaceButton.classList.remove \pressed-button
-    model.placerAction = ""
+    uiModel.placerAction = ""
 
   # Mouse move inside the SVG.
   svg.addEventListener \mousemove, (ev) !->
-    return unless model.placerAction == \place
+    return unless uiModel.placerAction == \place
     # FIXME: This formula is not accurate, but it's good enough for now.
     pos = Vec.fromCartesian ev.offsetX - rootX, ev.offsetY - rootY, 11 # A magic number.
-    unless pos of model.tiles
-      if model.auxTile
-        unplaceTile that.pos
-      model.auxTile = placeTile pos, null, \#F2F2F2
-        ..node.classList.add \ghost
+    if uiModel.auxTile
+      return if pos == that.pos
+      removeTileFromView view, that
+
+    if pos of model.tiles
+      uiModel.auxTile = null
+    else
+      addTileToView view,
+        uiModel.auxTile = createTile pos, null, \#F2F2F2
+      .classList.add \ghost
 
   # Click on the SVG.
   svg.addEventListener \mousedown, (ev) !->
     return if ev.button
-    if model.placerAction == \place
-      if model.auxTile
-        unplaceTile model.auxTile.pos
-        placeTile model.auxTile.pos, ++model.idCounter, \#EEEEEE
-        model.auxTile = null
-    else if model.placerAction == \unplace
+    if uiModel.placerAction == \place
+      if uiModel.auxTile
+        removeTileFromView view, that
+        addTileToView view,
+          model.tiles[that.pos] = createTile that.pos, ++model.idCounter, \#EEEEEE
+        uiModel.auxTile = null
+    else if uiModel.placerAction == \unplace
       pos = Vec.fromCartesian ev.offsetX - rootX, ev.offsetY - rootY, 11 # A magic number.
-      if pos of model.tiles
-        unplaceTile pos
-    else if model.activePal == \palette-tile-inspector
+      if model.tiles[pos]
+        delete model.tiles[pos]
+        removeTileFromView view, that
+    else if uiModel.activePal == \palette-tile-inspector
       pos = Vec.fromCartesian ev.offsetX - rootX, ev.offsetY - rootY, 11 # A magic number.
-      if (tile = model.tiles[pos]) && tile != model.curInspected
-        if model.curInspected
-          model.curInspected.node.classList.remove \inspected
-        model.curInspected = tile
-        tile.node.classList.add \inspected
+      if pos != uiModel.curInspected && (tile = model.tiles[pos])
+        view.tiles[that].classList.remove \inspected if uiModel.curInspected?
+        uiModel.curInspected = pos
+        view.tiles[pos].classList.add \inspected
+
         $id \inspected-id .textContent = \# + tile.id
         $id \inspected-color .value = tile.color
-        $id \inspected-label .value = tile.label.textContent
-        $id \inspected-sublabel .value = tile.sublabel.textContent
-        # $id \inspected-pic .value = tile.pic.getAttributeNS \xlink, \href
-    else if model.activePal == \palette-edge-inspector
+        $id \inspected-label .value = tile.label
+        $id \inspected-sublabel .value = tile.sublabel
+    else if uiModel.activePal == \palette-edge-inspector
       pos = Vec.fromCartesian ev.offsetX - rootX, ev.offsetY - rootY, 11 # A magic number.
       if (tile = model.tiles[pos])
-        if model.curInspected1 && !model.curInspected2 && Vec.dist(model.curInspected1.pos, tile.pos) <= 1
-          model.curInspected2 = tile if tile != model.curInspected1
+        if uiModel.curInspected1? && !uiModel.curInspected2? && Vec.dist(uiModel.curInspected1, pos) == 1
+          uiModel.curInspected2 = pos
         else
-          model.curInspected1 = tile
-          model.curInspected2 = null
+          uiModel.curInspected1 = pos
+          uiModel.curInspected2 = null
+
         $id \inspected-edge .textContent =
-          "#{if model.curInspected1?id? then \# + that else '?'} — #{if model.curInspected2?id? then \# + that else '?'}"
+          "#{formatTileId model, uiModel.curInspected1} — #{formatTileId model, uiModel.curInspected2}"
         input = $id \inspected-edge-thickness
-        unless (input.disabled = !model.curInspected2)
-          edge = getEdge model.curInspected1.pos, model.curInspected2.pos
-          if edge
-            model.curInspectedEdge = edge
-          else
-            edge = model.curInspectedEdge =
-              placeEdge model.curInspected1.pos, model.curInspected2.pos, DEFAULT_EDGE_THICKNESS
-          input.value = edge.thickness
-        else
+        if (input.disabled = !uiModel.curInspected2?)
           input.value = ""
+        else
+          unless (edge = getEdge model, uiModel.curInspected1, uiModel.curInspected2)
+            [edge, masterTile] = createEdgeWithMaster do
+              model
+              uiModel.curInspected1
+              uiModel.curInspected2
+              DEFAULT_EDGE_THICKNESS
+            model.edges[getEdgeKey edge.pos0, edge.pos1] = edge
+            addEdgeToView view, edge, masterTile
+          uiModel.curInspectedEdge = edge
+          input.value = edge.thickness
 
   # Mouse leave from the SVG.
   svg.addEventListener \mouseleave, !->
-    return unless model.placerAction == \place
-    if model.auxTile
-      unplaceTile that.pos
-      model.auxTile = null
+    return unless uiModel.placerAction == \place
+    if uiModel.auxTile?
+      removeTileFromView view, that
+      uiModel.auxTile = null
 
   $id \inspected-color .addEventListener \input, !->
-    that.color = that.polygon.style.fill = @value if model.curInspected
+    if uiModel.curInspected?
+      model.tiles[that]
+        ..color = @value
+        updateTileInView view, ..
 
   $id \inspected-label .addEventListener \input, !->
-    that.label.textContent = @value if model.curInspected
+    if uiModel.curInspected?
+      model.tiles[that]
+        ..label = @value
+        updateTileInView view, ..
 
   $id \inspected-sublabel .addEventListener \input, !->
-    that.sublabel.textContent = @value if model.curInspected
-
-  # $id \inspected-pic .addEventListener \input, !->
-  #   model.curInspected.pic.setAttributeNS \xlink, \href, @value
+    if uiModel.curInspected?
+      model.tiles[that]
+        ..sublabel = @value
+        updateTileInView view, ..
 
   addCustomListener \palette-tile-inspector, \close, !->
-    if model.curInspected
-      model.curInspected.node.classList.remove \inspected
-      model.curInspected = null
+    if uiModel.curInspected?
+      view.tiles[that].classList.remove \inspected
+      uiModel.curInspected = null
     $id \inspected-id .textContent = "<Не выбрано>"
     $id \inspected-color .textContent =
       $id \inspected-label .textContent =
         $id \inspected-sublabel .textContent = ""
-    # $id \inspected-pic .textContent = ""
 
   $id \inspected-edge-thickness .addEventListener \input, !->
-    model.curInspectedEdge.thickness = model.curInspectedEdge.line.style.strokeWidth = @value
+    if uiModel.curInspectedEdge
+      that.thickness = @value
+      updateEdgeInView view, that
 
   addCustomListener \palette-edge-inspector, \close, !->
-    model.curInspected1 = model.curInspected2 = null
+    uiModel.curInspected1 = uiModel.curInspected2 = null
     $id \inspected-edge .textContent = "? — ?"
     $id \inspected-edge-thickness .value = ""
 
