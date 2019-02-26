@@ -11,8 +11,8 @@ def build(bld):
 
     bld(
         features="plim",
-        source="index.plim",
-        target=out_dir.make_node("index.html"),
+        source="index.plim  igrischa-2.plim",
+        target=[out_dir.make_node("index.html"), out_dir.make_node("igrischa-2.html")],
     )
 
     bld(
