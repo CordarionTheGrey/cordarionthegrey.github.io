@@ -34,6 +34,9 @@ html
               label(for="inspected-color"): Цвет
               input#inspected-color
             div
+              label(for="inspected-text-color"): Цвет текста
+              input#inspected-text-color
+            div
               label(for="inspected-label"): Надпись
               input#inspected-label
             div

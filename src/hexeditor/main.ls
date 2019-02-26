@@ -20,6 +20,7 @@ unless Object.values
  * @property {Vec} pos
  * @property {?number} id
  * @property {string} color
+ * @property {string} textColor
  * @property {string} label
  * @property {string} sublabel
  */
@@ -288,11 +289,11 @@ createNode = (tagName, attrs, children) ->
   node
 
 
-createTile = (pos, id, color) ->
-  {pos, id, color, label: "", sublabel: ""}
+createTile = (pos, id, color, textColor) ->
+  {pos, id, color, textColor, label: "", sublabel: ""}
 
 
-addTileToView = (view, {pos, id, color, label, sublabel}) ->
+addTileToView = (view, {pos, id, color, textColor, label, sublabel}) ->
   console.assert pos !of view.tiles, "A tile is placed above another one"
 
   vPoly = createNode \polygon, do
@@ -312,7 +313,13 @@ addTileToView = (view, {pos, id, color, label, sublabel}) ->
   view.polygons[pos] = vPoly
   view.labels[pos] = vLabel
   view.sublabels[pos] = vSublabel
-  view.tiles[pos] = createNode \g, {class: \hex-tile, transform: "translate(0,0)"}, children
+  view.tiles[pos] = (createNode do
+    \g
+    class: \hex-tile
+    style: "stroke:#{textColor}"
+    transform: "translate(0,0)"
+    children
+  )
     xy = Vec.toCartesian pos, 11 # A magic number, yeah.
     moveTileRaw .., xy.0, xy.1
     view.svgRoot.appendChild ..
@@ -321,9 +328,10 @@ addTileToView = (view, {pos, id, color, label, sublabel}) ->
 updateTileInView = (view, {
   pos,
   # Assuming `id` is immutable.
-  color:    view.polygons[pos].style.fill,
-  label:    view.labels[pos].textContent,
-  sublabel: view.sublabels[pos].textContent,
+  color:     view.polygons[pos].style.fill,
+  textColor: view.tiles[pos].style.stroke,
+  label:     view.labels[pos].textContent,
+  sublabel:  view.sublabels[pos].textContent,
 }) !->
 
 
@@ -377,17 +385,30 @@ formatTileId = (model, pos) ->
 
 
 loadModel = ->
+  update = (key, action) !->
+    try
+      obj = JSON.parse localStorage.getItem key
+      localStorage.setItem key, JSON.stringify action(obj) ? obj
+    catch
+      console.warn e
+      console.info localStorage.getItem key
+
   m = m0 = localStorage.currentMigration || ""
 
   if m < \2019-02-26
     m  = \2019-02-26
-    delete localStorage.map
+    localStorage.map = '{"tiles":[],"edges":[],"idCounter":-1}'
+
+  if m < \2019-02-26-1
+    m  = \2019-02-26-1
+    update \map, !-> [..textColor = \#444444 for it.tiles]
 
   localStorage.currentMigration = m if m != m0
   try
     deserializeModel localStorage.map
   catch
     console.error e
+    console.info localStorage.map
     createModel!
 
 
@@ -478,7 +499,7 @@ main = !->
       uiModel.auxTile = null
     else
       addTileToView view,
-        uiModel.auxTile = createTile pos, null, \#F2F2F2
+        uiModel.auxTile = createTile pos, null, \#F2F2F2, \#999
       .classList.add \ghost
 
   # Click on the SVG.
@@ -488,7 +509,7 @@ main = !->
       if uiModel.auxTile
         removeTileFromView view, that
         addTileToView view,
-          model.tiles[that.pos] = createTile that.pos, ++model.idCounter, \#EEEEEE
+          model.tiles[that.pos] = createTile that.pos, ++model.idCounter, \#EEEEEE, \#444444
         uiModel.auxTile = null
     else if uiModel.placerAction == \unplace
       pos = Vec.fromCartesian ev.offsetX - rootX, ev.offsetY - rootY, 11 # A magic number.
@@ -504,6 +525,7 @@ main = !->
 
         $id \inspected-id .textContent = \# + tile.id
         $id \inspected-color .value = tile.color
+        $id \inspected-text-color .value = tile.textColor
         $id \inspected-label .value = tile.label
         $id \inspected-sublabel .value = tile.sublabel
     else if uiModel.activePal == \palette-edge-inspector
@@ -548,6 +570,13 @@ main = !->
         updateTileInView view, ..
       saveModel model
 
+  $id \inspected-text-color .addEventListener \input, !->
+    if uiModel.curInspected?
+      model.tiles[that]
+        ..textColor = @value
+        updateTileInView view, ..
+      saveModel model
+
   $id \inspected-label .addEventListener \input, !->
     if uiModel.curInspected?
       model.tiles[that]
@@ -568,8 +597,9 @@ main = !->
       uiModel.curInspected = null
     $id \inspected-id .textContent = "<Не выбрано>"
     $id \inspected-color .textContent =
-      $id \inspected-label .textContent =
-        $id \inspected-sublabel .textContent = ""
+      $id \inspected-text-color .textContent =
+        $id \inspected-label .textContent =
+          $id \inspected-sublabel .textContent = ""
 
   $id \inspected-edge-thickness .addEventListener \input, !->
     if uiModel.curInspectedEdge
