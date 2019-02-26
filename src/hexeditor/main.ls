@@ -301,14 +301,14 @@ addTileToView = (view, {pos, id, color, textColor, label, sublabel}) !->
     points: "9.5,-5.5 9.5,5.5 0,11 -9.5,5.5 -9.5,-5.5 0,-11"
     style:  "fill:#{color}"
   vLabel    = createNode \text, {class: \tile-label}
-  vSublabel = createNode \text, {class: \tile-sublabel, y: 6}
+  vSublabel = createNode \text, {class: \tile-sublabel, y: 5.5}
 
   vLabel.textContent = label
   vSublabel.textContent = sublabel
 
   children = [vPoly, vLabel, vSublabel]
   if id?
-    (children.3 = createNode \text, {class: \tile-id, y: -6})
+    (children.3 = createNode \text, {class: \tile-id, y: -5.5})
     .textContent = \# + id
 
   view.polygons[pos] = vPoly
