@@ -428,7 +428,7 @@ main = !->
 
   model = loadModel!
   view = createView!
-  [addTileToView view, .. for Object.values model.tiles]
+  [addTileToView view, .. for Object.values model.tiles .sort (a, b) -> a.id - b.id]
   [addEdgeToView view, .. for Object.values model.edges]
 
   uiModel =
