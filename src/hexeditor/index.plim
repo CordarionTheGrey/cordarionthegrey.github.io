@@ -54,5 +54,8 @@ html
             div
               label(for="inspected-edge-thickness"): Толщина
               input#inspected-edge-thickness(disabled)
+            div
+              label(for="inspected-edge-color"): Цвет
+              input#inspected-edge-color(disabled)
 
     script(type="text/javascript" src="/hexeditor/main.min.js")

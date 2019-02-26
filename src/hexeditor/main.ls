@@ -30,6 +30,7 @@ unless Object.values
  * @typedef {Object} Edge
  * @property {Vec} pos0
  * @property {Vec} pos1
+ * @property {string} color
  * @property {number} thickness
  */
 
@@ -293,7 +294,7 @@ createTile = (pos, id, color, textColor) ->
   {pos, id, color, textColor, label: "", sublabel: ""}
 
 
-addTileToView = (view, {pos, id, color, textColor, label, sublabel}) ->
+addTileToView = (view, {pos, id, color, textColor, label, sublabel}) !->
   console.assert pos !of view.tiles, "A tile is placed above another one"
 
   vPoly = createNode \polygon, do
@@ -348,28 +349,30 @@ getEdge = (model, pos0, pos1) ->
 
 createEdge = (model, pos0, pos1, thickness) ->
   if model.tiles[pos0].id >= model.tiles[pos1].id
-    {pos0, pos1, thickness}
+    {pos0, pos1, color: \#444444, thickness}
   else
-    {pos0: pos1, pos1: pos0, thickness}
+    {pos0: pos1, pos1: pos0, color: \#444444, thickness}
 
 
-addEdgeToView = (view, {pos0, pos1, thickness}) !->
+addEdgeToView = (view, {pos0, pos1, color, thickness}) !->
   # console.assert id0 >= id1, "Invalid edge direction"
   switch Vec.sub pos1, pos0 # There must be a place for magic in our world, so here it is.
     case 0x0001 /*E*/   => x1 =  9.5; y1 = -5.5; x2 =  9.5; y2 = 5.5
     case 0x00FF /*W*/   => x1 = -9.5; y1 = -5.5; x2 = -9.5; y2 = 5.5
-    case 0x0100 /*SSE*/ => x1 =  9.5; y1 =  5.5; x2 = 0;    y2 =  11
-    case 0xFF00 /*NNW*/ => x1 = -9.5; y1 = -5.5; x2 = 0;    y2 = -11
-    case 0xFF01 /*NNE*/ => x1 =  9.5; y1 = -5.5; x2 = 0;    y2 = -11
-    case 0x01FF /*SSW*/ => x1 = -9.5; y1 =  5.5; x2 = 0;    y2 =  11
+    case 0x0100 /*SSE*/ => x1 =  9.5; y1 =  5.5; x2 =    0; y2 =  11
+    case 0xFF00 /*NNW*/ => x1 = -9.5; y1 = -5.5; x2 =    0; y2 = -11
+    case 0xFF01 /*NNE*/ => x1 =  9.5; y1 = -5.5; x2 =    0; y2 = -11
+    case 0x01FF /*SSW*/ => x1 = -9.5; y1 =  5.5; x2 =    0; y2 =  11
 
-  line = createNode \line, {x1, y1, x2, y2, style: "stroke-width:#{thickness}"}
+  line = createNode \line, {x1, y1, x2, y2, style: "stroke:#{color};stroke-width:#{thickness}"}
   view.edges[getEdgeKey pos0, pos1] = line
   view.tiles[pos0].appendChild line
 
 
 updateEdgeInView = (view, edge) !->
-  view.edges[getEdgeKey edge.pos0, edge.pos1].style.strokeWidth = edge.thickness
+  view.edges[getEdgeKey edge.pos0, edge.pos1].style
+    ..stroke = edge.color
+    ..strokeWidth = edge.thickness
 
 
 removeEdgeFromView = (view, edge) !->
@@ -402,6 +405,10 @@ loadModel = ->
   if m < \2019-02-26-1
     m  = \2019-02-26-1
     update \map, !-> [..textColor = \#444444 for it.tiles]
+
+  if m < \2019-02-26-2
+    m  = \2019-02-26-2
+    update \map, !-> [..color = \#444444 for it.edges]
 
   localStorage.currentMigration = m if m != m0
   try
@@ -500,7 +507,6 @@ main = !->
     else
       addTileToView view,
         uiModel.auxTile = createTile pos, null, \#F2F2F2, \#999
-      .classList.add \ghost
 
   # Click on the SVG.
   svg.addEventListener \mousedown, (ev) !->
@@ -539,9 +545,10 @@ main = !->
 
         $id \inspected-edge .textContent =
           "#{formatTileId model, uiModel.curInspected1} — #{formatTileId model, uiModel.curInspected2}"
-        input = $id \inspected-edge-thickness
-        if (input.disabled = !uiModel.curInspected2?)
-          input.value = ""
+        thicknessInput = $id \inspected-edge-thickness
+        colorInput = $id \inspected-edge-color
+        if (thicknessInput.disabled = colorInput.disabled = !uiModel.curInspected2?)
+          thicknessInput.value = colorInput.value = ""
         else
           unless (edge = getEdge model, uiModel.curInspected1, uiModel.curInspected2)
             edge = createEdge do
@@ -552,7 +559,8 @@ main = !->
             model.edges[getEdgeKey edge.pos0, edge.pos1] = edge
             addEdgeToView view, edge
           uiModel.curInspectedEdge = edge
-          input.value = edge.thickness
+          colorInput.value = edge.color
+          thicknessInput.value = edge.thickness
 
     saveModel model
 
@@ -607,10 +615,17 @@ main = !->
       updateEdgeInView view, that
       saveModel model
 
+  $id \inspected-edge-color .addEventListener \input, !->
+    if uiModel.curInspectedEdge
+      that.color = @value
+      updateEdgeInView view, that
+      saveModel model
+
   addCustomListener \palette-edge-inspector, \close, !->
     uiModel.curInspected1 = uiModel.curInspected2 = null
     $id \inspected-edge .textContent = "? — ?"
-    $id \inspected-edge-thickness .value = ""
+    $id \inspected-edge-thickness .value =
+      $id \inspected-edge-color .value = ""
 
 
 addEventListener \DOMContentLoaded, main
