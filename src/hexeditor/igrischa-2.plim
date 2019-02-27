@@ -46,6 +46,9 @@ html
             .small-vmargin
               a(href="https://godville.net/forums/show_topic/3309?page=last" target="_blank")
                 Форум
+            .small-vmargin
+              a(href="https://godville.net/forums/redirect_to_post/3309?post=1652399" target="_blank")
+                Анонс
             .small-vmargin: |
               `a(href="https://godville.net/forums/redirect_to_post/3309?post=1669395" target="_blank") Ход 1`
               (`a(href="https://i.imgur.com/V6SEKeT.png" target="_blank") карта`)
