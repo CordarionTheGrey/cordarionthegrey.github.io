@@ -18,7 +18,21 @@ html
         .block
           .header Легенда
           .contents
-            Скоро будет.
+            table.map-legend
+              tr: td(style="background-color:#777;color:#FFF") К-да
+              tr: td(style="background-color:#BBB") СшныВрны
+              tr: td(style="background-color:#E0D888") КиК
+              tr: td(style="background-color:#AA56FF;color:#FFF") NНТРNГА
+              tr
+                td(style="text-decoration:line-through") Коленки
+                td(style="font-style:italic") | (дисквалифицированы)
+              tr: td(style="background-color:#FF9207") гртр!
+              tr: td(style="background-color:#009696;color:#FFF") Го_булки
+              tr: td(style="background-color:#FFF732") лич
+              tr: td(style="background-color:#FFBCEB") НОРМАЛЬ
+              tr: td(style="background-color:#66DB62") Шивамак
+              tr: td(style="background-color:#93BCFF") Октагон
+              tr: td(style="background-color:#CE656F;color:#FFF") [NB]
 
         .block
           .header Официальные ссылки
