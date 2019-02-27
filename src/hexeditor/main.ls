@@ -309,7 +309,7 @@ addTileToView = (view, {pos, id, color, textColor, label, sublabel}) !->
   children = [vPoly, vLabel, vSublabel]
   if id?
     (children.3 = createNode \text, {class: \tile-id, y: -5.5})
-    .textContent = \# + id
+    .textContent = id
 
   view.polygons[pos] = vPoly
   view.labels[pos] = vLabel
