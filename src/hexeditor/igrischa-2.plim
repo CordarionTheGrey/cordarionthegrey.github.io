@@ -11,7 +11,7 @@ html
     .hex-editor
       .horiz-tile.visualization
         .block(style="height:740px")
-          .vis-title Ход 4.5 (междуходовье)
+          .vis-title Ход 5 (укрепления)
           iframe(src="/hexeditor/igrischa-2-map.html" style="height:700px;width:99%;border:none")
 
       .horiz-tile.control-panel
@@ -61,6 +61,9 @@ html
             .small-vmargin: |
               `a(href="https://godville.net/forums/redirect_to_post/3309?post=1670952" target="_blank") Ход 4`
               (`a(href="https://i.imgur.com/ovl868Y.jpg" target="_blank") карта`)
+            .small-vmargin: |
+              `a(href="https://godville.net/forums/redirect_to_post/3309?post=1671494" target="_blank") Ход 5`
+              (`a(href="https://i.imgur.com/fnunx6b.jpg" target="_blank") карта`)
 
         .block
           .header Дисклеймер
