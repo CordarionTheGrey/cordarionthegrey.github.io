@@ -317,7 +317,7 @@ addTileToView = (view, {pos, id, color, textColor, label, sublabel}) !->
   view.tiles[pos] = (createNode do
     \g
     class: \hex-tile
-    style: "stroke:#{textColor}"
+    style: "stroke:#{textColor};fill:#{textColor}"
     transform: "translate(0,0)"
     children
   )
@@ -327,13 +327,14 @@ addTileToView = (view, {pos, id, color, textColor, label, sublabel}) !->
 
 
 updateTileInView = (view, {
-  pos,
+  pos
   # Assuming `id` is immutable.
-  color:     view.polygons[pos].style.fill,
-  textColor: view.tiles[pos].style.stroke,
-  label:     view.labels[pos].textContent,
-  sublabel:  view.sublabels[pos].textContent,
+  color:    view.polygons[pos].style.fill
+  textColor
+  label:    view.labels[pos].textContent
+  sublabel: view.sublabels[pos].textContent
 }) !->
+  view.tiles[pos].style.cssText = "stroke:#{textColor};fill:#{textColor}"
 
 
 removeTileFromView = (view, {pos}) !->

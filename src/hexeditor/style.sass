@@ -75,25 +75,23 @@ input:not([type])
   user-select: none
 
 .hex-tile
-  stroke-width: 0.25
-  font-family: sans-serif
-
   .tile-id,
   .tile-label,
   .tile-sublabel,
+    stroke-width: 0.1
+    font-family: sans-serif
     text-anchor: middle
 
-  .tile-id
-    stroke-width: 0.1
+  .tile-id,
+  .tile-sublabel,
     font-size: 4px
 
   .tile-label
-    stroke-width: 0.12
-    font-size: 4.75px
+    font-size: 4.3px
 
-  .tile-sublabel
-    stroke-width: 0.11
-    font-size: 4px
+  polygon
+    stroke-width: 0.25
+    stroke: #444
 
   &.inspected polygon
     stroke-width: 0.8
