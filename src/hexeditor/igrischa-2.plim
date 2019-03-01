@@ -11,7 +11,7 @@ html
     .hex-editor
       .horiz-tile.visualization
         .block(style="height:740px")
-          .vis-title Ход 5 (укрепления)
+          .vis-title Ход 5.5 (приятные выходные)
           iframe(src="/hexeditor/igrischa-2-map.html" style="height:700px;width:99%;border:none")
 
       .horiz-tile.control-panel
