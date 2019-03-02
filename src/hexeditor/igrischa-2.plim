@@ -64,6 +64,9 @@ html
             .small-vmargin: |
               `a(href="https://godville.net/forums/redirect_to_post/3309?post=1671494" target="_blank") Ход 5`
               (`a(href="https://i.imgur.com/fnunx6b.jpg" target="_blank") карта`)
+            .small-vmargin: |
+              `a(href="https://godville.net/forums/redirect_to_post/3309?post=1672244" target="_blank") Не ход 6`
+              (`a(href="https://i.imgur.com/eJWOi7e.png" target="_blank") карта`)
 
         .block
           .header Дисклеймер
