@@ -22,10 +22,6 @@ html
             button#unplace-tile(title="Удалить гекс") −
             button#reset-map(title="Сбросить всё") !!!
 
-        #palette-object-registry.block.hidden
-          .header.clickable Реестр объектов
-          .contents Not implemented.
-
         #palette-tile-inspector.block
           .header.clickable Инспектор гексов
           .contents
@@ -42,9 +38,6 @@ html
             div
               label(for="inspected-sublabel") Подпись
               input#inspected-sublabel
-            / div
-              label(for="inspected-pic") Картинка (URL)
-              input#inspected-pic
 
         #palette-edge-inspector.block
           .header.clickable Таможенный инспектор
@@ -57,5 +50,10 @@ html
             div
               label(for="inspected-edge-color") Цвет
               input#inspected-edge-color(disabled)
+
+        #palette-export-manager.block
+          .header.clickable Менеджер по экспорту
+          .contents
+            textarea#exported-code
 
     script(type="text/javascript" src="/hexeditor/main.min.js")

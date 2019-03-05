@@ -5,9 +5,9 @@ const DEFAULT_SCALE = 3 # Must be synced with the corresponding variable in CSS.
 const DEFAULT_EDGE_THICKNESS = 0.25
 const PALETTES =
   \palette-tile-placer
-  \palette-object-registry
   \palette-tile-inspector
   \palette-edge-inspector
+  \palette-export-manager
 
 
 unless Object.values
@@ -424,6 +424,10 @@ saveModel = (model) !->
   localStorage.map = serializeModel model
 
 
+format02d = (x) ->
+  "0#{x}".slice -2
+
+
 main = !->
   removeEventListener \DOMContentLoaded, main
 
@@ -627,6 +631,31 @@ main = !->
     $id \inspected-edge .textContent = "? — ?"
     $id \inspected-edge-thickness .value =
       $id \inspected-edge-color .value = ""
+
+  addCustomListener \palette-export-manager, \open, !->
+    now = new Date Date.now! + 10800e3
+    $id \exported-code .value =
+      "
+      <html>
+      <head>
+        <title>Годвилльские Игрища — 2: Карта</title>
+        <link rel=\"stylesheet\" type=\"text/css\" href=\"/hexeditor/style.min.css\"/>
+      </head>
+      <body style=\"overflow:hidden\">
+        <div class=\"update-timestamp\">
+          Последнее обновление:\n
+          #{format02d now.getUTCHours!}:#{format02d now.getUTCMinutes!} MSK,\n
+          #{format02d now.getUTCDate!}.
+          #{format02d now.getUTCMonth! + 1}.
+          #{format02d now.getUTCFullYear!}.\n
+        </div>
+        \n#{view.svgRoot.parentNode.outerHTML}\n
+      </body>
+      </html>\n
+      "
+
+  addCustomListener \palette-export-manager, \close, !->
+    $id \exported-code .value = ""
 
 
 addEventListener \DOMContentLoaded, main
