@@ -11,7 +11,7 @@ html
     .hex-editor
       .horiz-tile.visualization
         .block(style="height:740px")
-          .vis-title Ход 7 (боевой настрой)
+          .vis-title Ход 7 ½ (междуходовье)
           iframe(src="/hexeditor/igrischa-2-map.html" style="height:700px;width:99%;border:none")
 
       .horiz-tile.control-panel
@@ -70,6 +70,9 @@ html
             .small-vmargin: |
               `a(href="https://godville.net/forums/redirect_to_post/3309?post=1673437" target="_blank") Ход 7`
               (`a(href="https://i.imgur.com/ZUVMXsY.jpg" target="_blank") карта`)
+            / .small-vmargin: |
+              `a(href="" target="_blank") Ход 8`
+              (`a(href="" target="_blank") карта`)
 
         .block
           .header Дисклеймер
