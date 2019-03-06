@@ -11,7 +11,7 @@ html
     .hex-editor
       .horiz-tile.visualization
         .block(style="height:740px")
-          .vis-title Ход 8 ½ (междуходовье)
+          .vis-title Ход 9 (золотой день)
           iframe(src="/hexeditor/igrischa-2-map.html" style="height:700px;width:99%;border:none")
 
       .horiz-tile.control-panel
@@ -73,9 +73,9 @@ html
             .small-vmargin: |
               `a(href="https://godville.net/forums/redirect_to_post/3309?post=1674025" target="_blank") Ход 8`
               (`a(href="https://i.imgur.com/Dhz23CL.jpg" target="_blank") карта`)
-            / .small-vmargin: |
-              `a(href="" target="_blank") Ход 9`
-              (`a(href="" target="_blank") карта`)
+            .small-vmargin: |
+              `a(href="https://godville.net/forums/redirect_to_post/3309?post=1674516" target="_blank") Ход 9`
+              (`a(href="https://i.imgur.com/kjXzWpH.jpg" target="_blank") карта`)
 
         .block
           .header Дисклеймер
