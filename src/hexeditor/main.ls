@@ -636,8 +636,10 @@ main = !->
     now = new Date Date.now! + 10800e3
     $id \exported-code .value =
       "
+      <!DOCTYPE html>
       <html>
       <head>
+        <meta charset=\"UTF-8\"/>
         <title>Годвилльские Игрища — 2: Карта</title>
         <link rel=\"stylesheet\" type=\"text/css\" href=\"/hexeditor/style.min.css\"/>
       </head>
