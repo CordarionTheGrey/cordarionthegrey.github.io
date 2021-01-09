@@ -405,7 +405,7 @@ loadModel = ->
 
   if m < \2019-02-26-1
     m  = \2019-02-26-1
-    update \map, !-> [..textColor = \#444444 for it.tiles]
+    update \map, !-> [..textColor = \#111111 for it.tiles]
 
   if m < \2019-02-26-2
     m  = \2019-02-26-2
@@ -520,7 +520,7 @@ main = !->
       if uiModel.auxTile
         removeTileFromView view, that
         addTileToView view,
-          model.tiles[that.pos] = createTile that.pos, ++model.idCounter, \#EEEEEE, \#444444
+          model.tiles[that.pos] = createTile that.pos, ++model.idCounter, \#EEEEEE, \#111111
         uiModel.auxTile = null
     else if uiModel.placerAction == \unplace
       pos = Vec.fromCartesian ev.offsetX - rootX, ev.offsetY - rootY, 11 # A magic number.
@@ -616,7 +616,7 @@ main = !->
 
   $id \inspected-edge-thickness .addEventListener \input, !->
     if uiModel.curInspectedEdge
-      that.thickness = @value
+      that.thickness = parseInt @value
       updateEdgeInView view, that
       saveModel model
 
