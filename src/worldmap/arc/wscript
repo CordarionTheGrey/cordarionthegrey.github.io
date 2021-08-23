@@ -1,0 +1,21 @@
+def options(opt):
+    pass
+
+
+def configure(cnf):
+    pass
+
+
+def build(bld):
+    out_dir = bld.path.make_node("../../../worldmap/arc")
+
+    bld(
+        features="plim",
+        source="index.plim",
+        target=out_dir.make_node("index.html"),
+    )
+    bld(
+        features="ts",
+        source_path=bld.path,
+        target_path=out_dir,
+    )

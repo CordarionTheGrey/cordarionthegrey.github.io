@@ -1,0 +1,29 @@
+doctype html
+
+html
+  head
+    meta charset="UTF-8"
+    title Расчёт дуги спирали
+    link rel="shortcut icon" type="image/x-icon" href="/favicon.ico"
+    style type="text/css": |
+      .form input {
+        width: 6em;
+      }
+      .form input:invalid {
+        border-color: #F66;
+      }
+
+  body
+    h1 Расчёт дуги спирали
+    table.form
+      tr
+        td: label for="from" Начало (столбы):
+        td: input#from type="number" min="0" max="1499" value="0"
+      tr
+        td: label for="to" Конец (столбы):
+        td: input#to type="number" min="0" max="1499" value="0"
+      tr
+        td: label for="arc" Дуга (градусы):
+        td: input#arc(disabled value="0.0")
+
+    script type="text/javascript" src="/worldmap/arc/main.js"
