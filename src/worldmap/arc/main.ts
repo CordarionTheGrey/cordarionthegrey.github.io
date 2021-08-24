@@ -22,7 +22,7 @@ const msToAngle: readonly number[ ] = (() => {
 })()
 
 function formatArc(a: number, b: number): string {
-    return (msToAngle[b] - msToAngle[a]).toFixed(1).replace("-", "−")
+    return (msToAngle[b] - msToAngle[a]).toFixed(1).replace(".", ",").replace("-", "−")
 }
 
 function getNumber($input: HTMLInputElement): number {

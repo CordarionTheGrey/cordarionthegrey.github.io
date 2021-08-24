@@ -24,6 +24,6 @@ html
         td: input#to type="number" min="0" max="1499" value="0"
       tr
         td: label for="arc" Дуга (градусы):
-        td: input#arc(disabled value="0.0")
+        td: input#arc(readonly value="0,0")
 
     script type="text/javascript" src="/worldmap/arc/main.js"

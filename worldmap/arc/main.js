@@ -20,7 +20,7 @@
         return result;
     })();
     function formatArc(a, b) {
-        return (msToAngle[b] - msToAngle[a]).toFixed(1).replace("-", "−");
+        return (msToAngle[b] - msToAngle[a]).toFixed(1).replace(".", ",").replace("-", "−");
     }
     function getNumber($input) {
         return $input.checkValidity() ? $input.valueAsNumber : NaN;
