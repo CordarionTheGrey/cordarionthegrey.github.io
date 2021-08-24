@@ -1,28 +1,29 @@
 "use strict";
 (function () {
-    function calculateAngles(max, scale) {
-        var result = [];
+    function calculateAngles(n, scale) {
         var radToDeg = 180 / Math.PI;
         var wtf = scale * (2 * 4.9 * Math.PI) / 160;
-        var a = wtf;
-        for (var i = 0; i <= max; i++) {
+        var a = wtf + 1;
+        var result = [a * radToDeg];
+        for (var i = 1; i < n; i++) {
+            a += wtf / a;
             a += wtf / a;
             result[i] = a * radToDeg;
-            a += wtf / a;
         }
         return result;
     }
-    var convertMsToAngle = (function () {
-        var angles0 = calculateAngles(256, 4.75);
-        var angles1 = calculateAngles(1499, .96);
-        var offset = angles0[256] - angles0[220] + 1440;
-        return function (ms) { return ms < 256 ? angles0[ms] : angles1[ms - 220] + offset; };
+    var msToAngle = (function () {
+        var result = calculateAngles(256, 4.75);
+        var tmp = calculateAngles(1280, .96);
+        for (var i = 256; i < 1500; i++)
+            result[i] = tmp[i - 220] + 1440;
+        return result;
     })();
     function formatArc(a, b) {
-        return (convertMsToAngle(b) - convertMsToAngle(a)).toFixed(1).replace("-", "−");
+        return (msToAngle[b] - msToAngle[a]).toFixed(1).replace("-", "−");
     }
-    function getNumber(input) {
-        return input.checkValidity() ? input.valueAsNumber : NaN;
+    function getNumber($input) {
+        return $input.checkValidity() ? $input.valueAsNumber : NaN;
     }
     var $from = document.getElementById("from");
     var $to = document.getElementById("to");
